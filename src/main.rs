@@ -14,7 +14,7 @@ mod utils;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "language_evolution")]
 struct Opt {
-    #[structopt(short = "p", long = "repo_path", env)]
+    #[structopt(short = "p", long = "repo_path", env, default_value = "")]
     repo_path: String,
 
     #[structopt(short = "f", long = "folders", default_value = "[.]")]
