@@ -19,9 +19,8 @@ struct Opt {
 
     #[structopt(short = "f", long = "folders", default_value = "[.]")]
     folders: String,
-
-    #[structopt(short = "d", long = "db", env, default_value = "")]
-    db_path: String,
+    // #[structopt(short = "d", long = "db", env, default_value = "")]
+    // db_path: String,
 }
 
 fn main() {
