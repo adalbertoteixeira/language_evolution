@@ -40,21 +40,21 @@ fn main() {
     languages_vec.push(["js", "js,jsx"]);
 
     // Get current branch
-    let mut branch_arg = r#"cd "#.to_owned();
-    branch_arg.push_str(&opt.repo_path);
-    branch_arg.push_str(r#"  && git rev-parse --abbrev-ref HEAD"#);
-    debug!("Git branch arg is: {:?}", branch_arg);
-    let git_branch = Command::new("sh")
-        .arg("-c")
-        .arg(branch_arg)
-        .output()
-        .unwrap();
-    debug!("Git branch request is {:?}", git_branch.status);
-    let branch = str::from_utf8(&git_branch.stdout)
-        .unwrap()
-        .strip_suffix("\n")
-        .unwrap();
-    debug!("Git branch is {:?}", branch);
+    // let mut branch_arg = r#"cd "#.to_owned();
+    // branch_arg.push_str(&opt.repo_path);
+    // branch_arg.push_str(r#"  && git rev-parse --abbrev-ref HEAD"#);
+    // debug!("Git branch arg is: {:?}", branch_arg);
+    // let git_branch = Command::new("sh")
+    //     .arg("-c")
+    //     .arg(branch_arg)
+    //     .output()
+    //     .unwrap();
+    // debug!("Git branch request is {:?}", git_branch.status);
+    // let branch = str::from_utf8(&git_branch.stdout)
+    // .unwrap()
+    // .strip_suffix("\n")
+    // .unwrap();
+    // debug!("Git branch is {:?}", branch);
     let mut json_counts = r#"{"#.to_owned();
 
     let current_version = utils::get_version(&opt.repo_path);
@@ -365,7 +365,8 @@ fn main() {
     //     &add_language_header_result
     // );
 
-    let mut remove_last_line = r#"sed -i '' '$d' "#.to_owned();
+    // @TODO check if gnu-sed exists, otherwise add `-i ''`
+    let mut remove_last_line = r#"sed -i '$d' "#.to_owned();
     remove_last_line.push_str(&opt.repo_path);
     remove_last_line.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
     debug!("Last line removal command is {:?}", &remove_last_line);
