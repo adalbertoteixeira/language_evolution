@@ -1,9 +1,16 @@
 use log::debug;
 use std::process::Command;
 
-pub fn get_version(repo_path: &str) -> String {
+pub fn get_version(version: &str, repo_path: &str) -> String {
     debug!("Get Version");
-    debug!("version: {}", repo_path);
+    debug!("Existing version: {}", version);
+
+    let existing_version = version.to_owned();
+    if existing_version.len() > 0 {
+        return existing_version;
+    }
+
+    debug!("Version path: {}", repo_path);
 
     let mut argument = r#"grep -Eo '\"version\": \"([\d.]*)\"' "#.to_owned();
     argument.push_str(&repo_path);

@@ -19,8 +19,9 @@ struct Opt {
 
     #[structopt(short = "f", long = "folders", default_value = "[.]")]
     folders: String,
-    // #[structopt(short = "d", long = "db", env, default_value = "")]
-    // db_path: String,
+
+    #[structopt(short = "v", long = "version", default_value = "")]
+    version: String,
 }
 
 fn main() {
@@ -57,7 +58,7 @@ fn main() {
     // debug!("Git branch is {:?}", branch);
     let mut json_counts = r#"{"#.to_owned();
 
-    let current_version = utils::get_version(&opt.repo_path);
+    let current_version = utils::get_version(&opt.version, &opt.repo_path);
     let last_entry = utils::get_last_entry(&opt.repo_path);
     debug!("Last entry: {:?}", last_entry);
 
