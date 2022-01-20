@@ -5,9 +5,9 @@ pub fn get_version(repo_path: &str) -> String {
     debug!("Get Version");
     debug!("version: {}", repo_path);
 
-    let mut argument = r#"grep -Eo "\"version\":\s\"(.*)" "#.to_owned();
+    let mut argument = r#"grep -Eo '\"version\": \"([\d.]*)\"' "#.to_owned();
     argument.push_str(&repo_path);
-    argument.push_str(r#"/package.json | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*""#);
+    argument.push_str(r#"/package.json | grep -Po '[\d\.]*'"#);
     debug!("Argument: {:?}", argument);
     let version = Command::new("sh")
         .arg("-c")
