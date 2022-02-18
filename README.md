@@ -21,6 +21,11 @@ If build fails , remove `target/*` before building.
 
 To upload latest build binaries to Github:
 
+If a new release is needed
+```
+gh release create v0.2.0
+```
+
 ```
 gh release upload v0.2.0 target/x86_64-unknown-linux-gnu/release/language_evolution --clobber
 ```
