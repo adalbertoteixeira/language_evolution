@@ -43,11 +43,22 @@ Only one release version _OR_ date are allowed.
 
 ## Install
 ```
+# Linux
+
 cd ~ && \
-apt-get update && apt-get install ripgrep && \
-curl -LO https://github.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
+apt-get update && apt-get install ripgrep xsv && \
+curl -LO https://Vgithub.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
+chmod +x ./language_evolution
+
+# macOS
+
+brew install gnu-sed
+export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+curl -LO https://Vgithub.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
 chmod +x ./language_evolution
 ```
+
+
 
 ## Usage
 
@@ -60,3 +71,4 @@ chmod +x ./language_evolution
 export FOLDERS_TO_MATCH
 ./language_evolution -f "web,api" -p "/tmp/ben"
 ```
+
