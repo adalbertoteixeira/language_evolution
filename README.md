@@ -15,6 +15,10 @@ docker run -it --rm --user "$(id -u)":"$(id -g)" -v "$PWD":/usr/src/myapp -w /us
 
 rustup target add x86_64-unknown-linux-gnu
 cargo build --release --target x86_64-unknown-linux-gnu
+
+# or using system target
+
+cargo build --release
 ```
 
 If build fails , remove `target/*` before building.
