@@ -25,6 +25,13 @@ To upload latest build binaries to Github:
 gh release upload v0.2.0 target/x86_64-unknown-linux-gnu/release/language_evolution --clobber
 ```
 
+## Limitations
+Only one release version _OR_ date are allowed.
+
+## Requirements
+- sed / gnu-sed on MacOs
+- [xsv](https://github.com/BurntSushi/xsv)
+
 ## Install
 ```
 cd ~ && \
@@ -36,7 +43,11 @@ chmod +x ./language_evolution
 ## Usage
 
 ```
+./language_evolution -h 
+```
 
+*Basic example with release version*
+```
 export FOLDERS_TO_MATCH
 ./language_evolution -f "web,api" -p "/tmp/ben"
 ```
