@@ -9,6 +9,7 @@ use std::process::Command;
 use std::str;
 use structopt::StructOpt;
 
+mod types;
 mod utils;
 
 #[derive(StructOpt, Debug)]
@@ -20,8 +21,19 @@ struct Opt {
     #[structopt(short = "f", long = "folders", default_value = "[.]")]
     folders: String,
 
-    #[structopt(short = "v", long = "version", default_value = "")]
+    #[structopt(
+        short = "v",
+        long = "version",
+        required_if("date", ""),
+        default_value = ""
+    )]
     version: String,
+
+    #[structopt(short = "d", long = "date", required_if("version", ""))]
+    date: bool,
+
+    #[structopt(short = "r", long = "dry-run")]
+    dry_run: bool,
 }
 
 fn main() {
@@ -58,22 +70,38 @@ fn main() {
     // debug!("Git branch is {:?}", branch);
     let mut json_counts = r#"{"#.to_owned();
 
-    let current_version = utils::get_version(&opt.version, &opt.repo_path);
-    let last_entry = utils::get_last_entry(&opt.repo_path);
-    debug!("Last entry: {:?}", last_entry);
+    let utc: DateTime<Utc> = Utc::now();
+    let current_date = &utc.format("%Y-%m-%d").to_string();
+    let current_version = &opt.version;
+    let last_version_exists = utils::check_version_exists(&opt.repo_path, &current_version);
+    debug!("Last entry exists: {:?}", last_version_exists);
 
-    let last_entry_exists = utils::check_version_exists(&last_entry, &current_version);
-    debug!("Last entry exists: {:?}", last_entry_exists);
-
-    if last_entry_exists == true {
+    if last_version_exists == true {
         writeln!(
             handle,
-            "File already has an entry for {}.",
+            "File already has an entry for version {}.",
             &current_version
         )
         .unwrap();
         return;
     }
+
+    if opt.version.len() == 0 {
+        let last_date_exists = utils::check_date_exists(&opt.repo_path, &current_date);
+        debug!("Last date exists: {:?}", last_date_exists);
+
+        if last_date_exists == true {
+            writeln!(
+                handle,
+                "File already has an entry for date {}.",
+                &current_date
+            )
+            .unwrap();
+            return;
+        }
+    }
+    let last_entry = utils::get_last_entry(&opt.repo_path);
+    debug!("Last entry: {:?}", last_entry);
 
     let parsed_select: Vec<&str> = last_entry.split(",").collect();
     debug!("Parse Select split: {:?}", parsed_select);
@@ -183,8 +211,6 @@ fn main() {
     let mut current_row = "".to_owned();
     current_row.push_str(&current_version);
     current_row.push_str(",");
-    let utc: DateTime<Utc> = Utc::now();
-    let current_date = &utc.format("%Y-%m-%d").to_string();
     current_row.push_str(current_date);
     current_row.push_str(",");
 
@@ -299,142 +325,59 @@ fn main() {
     )
     .unwrap();
 
-    // let mut insert_statement: String =
-    //     r#"insert into language_evolution (counts, date, branch) VALUES ('"#.to_owned();
-    // insert_statement.push_str(&json_counts);
-    // insert_statement.push_str(r#"','"#);
-    // insert_statement.push_str(current_date);
-    // insert_statement.push_str(r#"','"#);
-    // insert_statement.push_str(branch);
-    // insert_statement.push_str(r#"')"#);
-    // debug!("Insert statement {:?}", insert_statement);
-    // let insert_sqlite = Command::new("sqlite3")
-    //     .arg(&opt.db_path)
-    //     .arg(insert_statement)
-    //     .output()
-    //     .expect("Failed to execute command");
-    // debug!("Insert result {:?}", insert_sqlite);
+    utils::remove_last_lines(&opt.repo_path, opt.dry_run);
+    if opt.dry_run != true {
+        let mut add_counts = r#"echo '"#.to_owned();
+        add_counts.push_str(&current_row);
+        add_counts.push_str(r#"' >> "#);
+        add_counts.push_str(&opt.repo_path);
+        add_counts.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
+        debug!("Last line removal command is {:?}", &add_counts);
+        if opt.dry_run != true {
+            let add_counts_result = Command::new("sh")
+                .arg("-c")
+                .arg(&add_counts)
+                .output()
+                .unwrap();
+            debug!("Last line removal result is {:?}", &add_counts_result);
+        }
 
-    // let mut remove_first_line = r#"sed -i '' '1d' "#.to_owned();
-    // remove_first_line.push_str(&opt.repo_path);
-    // remove_first_line.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    // debug!("First line removal command is {:?}", &remove_first_line);
-    // let remove_first_line_result = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(&remove_first_line)
-    //     .output()
-    //     .unwrap();
-    // debug!(
-    //     "Last line removal result is {:?}",
-    //     &remove_first_line_result
-    // );
-    // let remove_first_line_result_again = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(remove_first_line)
-    //     .output()
-    //     .unwrap();
-    // debug!(
-    //     "First line removal result is {:?}",
-    //     &remove_first_line_result_again
-    // );
-    // let mut add_folder_header = r#"echo '"#.to_owned();
-    // add_folder_header.push_str(&folder_header);
-    // add_folder_header.push_str(r#"' >> "#);
-    // add_folder_header.push_str(&opt.repo_path);
-    // add_folder_header.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    // debug!("Add folder header command is {:?}", &add_folder_header);
-    // let add_folder_header_result = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(&add_folder_header)
-    //     .output()
-    //     .unwrap();
-    // debug!("Add folder header is {:?}", &add_folder_header_result);
+        let mut add_integer_differences = r#"echo '"#.to_owned();
+        add_integer_differences.push_str(&diff_row);
+        add_integer_differences.push_str(r#"' >> "#);
+        add_integer_differences.push_str(&opt.repo_path);
+        add_integer_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
+        debug!(
+            "Last line removal command is {:?}",
+            &add_integer_differences
+        );
+        let add_integer_differences_result = Command::new("sh")
+            .arg("-c")
+            .arg(&add_integer_differences)
+            .output()
+            .unwrap();
+        debug!(
+            "Last line removal result is {:?}",
+            &add_integer_differences_result
+        );
 
-    // let mut add_language_header = r#"echo '"#.to_owned();
-    // add_language_header.push_str(&language_header);
-    // add_language_header.push_str(r#"' >> "#);
-    // add_language_header.push_str(&opt.repo_path);
-    // add_language_header.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    // debug!("Add language header command is {:?}", &add_language_header);
-    // let add_language_header_result = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(&add_language_header)
-    //     .output()
-    //     .unwrap();
-    // debug!(
-    //     "Add language header removal result is {:?}",
-    //     &add_language_header_result
-    // );
-
-    // @TODO check if gnu-sed exists, otherwise add `-i ''`
-    let mut remove_last_line = r#"sed -i '$d' "#.to_owned();
-    remove_last_line.push_str(&opt.repo_path);
-    remove_last_line.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    debug!("Last line removal command is {:?}", &remove_last_line);
-    let remove_last_line_result = Command::new("sh")
-        .arg("-c")
-        .arg(&remove_last_line)
-        .output()
-        .unwrap();
-    debug!("Last line removal result is {:?}", &remove_last_line_result);
-    let remove_last_line_result_again = Command::new("sh")
-        .arg("-c")
-        .arg(remove_last_line)
-        .output()
-        .unwrap();
-    debug!(
-        "Last line removal result is {:?}",
-        &remove_last_line_result_again
-    );
-
-    let mut add_counts = r#"echo '"#.to_owned();
-    add_counts.push_str(&current_row);
-    add_counts.push_str(r#"' >> "#);
-    add_counts.push_str(&opt.repo_path);
-    add_counts.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    debug!("Last line removal command is {:?}", &add_counts);
-    let add_counts_result = Command::new("sh")
-        .arg("-c")
-        .arg(&add_counts)
-        .output()
-        .unwrap();
-    debug!("Last line removal result is {:?}", &add_counts_result);
-
-    let mut add_integer_differences = r#"echo '"#.to_owned();
-    add_integer_differences.push_str(&diff_row);
-    add_integer_differences.push_str(r#"' >> "#);
-    add_integer_differences.push_str(&opt.repo_path);
-    add_integer_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    debug!(
-        "Last line removal command is {:?}",
-        &add_integer_differences
-    );
-    let add_integer_differences_result = Command::new("sh")
-        .arg("-c")
-        .arg(&add_integer_differences)
-        .output()
-        .unwrap();
-    debug!(
-        "Last line removal result is {:?}",
-        &add_integer_differences_result
-    );
-
-    let mut add_percent_differences = r#"echo '"#.to_owned();
-    add_percent_differences.push_str(&diff_percent_row);
-    add_percent_differences.push_str(r#"' >> "#);
-    add_percent_differences.push_str(&opt.repo_path);
-    add_percent_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-    debug!(
-        "Last line removal command is {:?}",
-        &add_percent_differences
-    );
-    let add_percent_differences_result = Command::new("sh")
-        .arg("-c")
-        .arg(&add_percent_differences)
-        .output()
-        .unwrap();
-    debug!(
-        "Last line removal result is {:?}",
-        &add_percent_differences_result
-    );
+        let mut add_percent_differences = r#"echo '"#.to_owned();
+        add_percent_differences.push_str(&diff_percent_row);
+        add_percent_differences.push_str(r#"' >> "#);
+        add_percent_differences.push_str(&opt.repo_path);
+        add_percent_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
+        debug!(
+            "Last line removal command is {:?}",
+            &add_percent_differences
+        );
+        let add_percent_differences_result = Command::new("sh")
+            .arg("-c")
+            .arg(&add_percent_differences)
+            .output()
+            .unwrap();
+        debug!(
+            "Last line removal result is {:?}",
+            &add_percent_differences_result
+        );
+    }
 }
