@@ -47,27 +47,10 @@ fn main() {
     let folder_split: Vec<&str> = opt.folders.split(",").collect();
     debug!("Folders to iterate: {:?}", &folder_split);
 
-    // let count_json = r#"{}"#.to_owned();
     let mut languages_vec = Vec::new();
     languages_vec.push(["ts", "ts,tsx"]);
     languages_vec.push(["js", "js,jsx"]);
 
-    // Get current branch
-    // let mut branch_arg = r#"cd "#.to_owned();
-    // branch_arg.push_str(&opt.repo_path);
-    // branch_arg.push_str(r#"  && git rev-parse --abbrev-ref HEAD"#);
-    // debug!("Git branch arg is: {:?}", branch_arg);
-    // let git_branch = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(branch_arg)
-    //     .output()
-    //     .unwrap();
-    // debug!("Git branch request is {:?}", git_branch.status);
-    // let branch = str::from_utf8(&git_branch.stdout)
-    // .unwrap()
-    // .strip_suffix("\n")
-    // .unwrap();
-    // debug!("Git branch is {:?}", branch);
     let mut json_counts = r#"{"#.to_owned();
 
     let utc: DateTime<Utc> = Utc::now();
@@ -169,43 +152,12 @@ fn main() {
     let json_value: Value = serde_json::from_str(&json_counts).unwrap();
     debug!(" JSON value is {:?}", json_value);
 
-    // let mut select_statement: String =
-    // r#"sqlite3 /Users/adalbertoteixeira/Documents/ben/management/management.db "SELECT date,counts FROM language_evolution"#.to_owned();
-    // select_statement.push_str(r#" WHERE branch = '"#);
-    // select_statement.push_str(&branch);
-    // select_statement.push_str(r#"' ORDER BY date DESC LIMIT 1;""#);
-    // debug!("Select statement is {:?}", &select_statement);
-    // let select_sqlite = Command::new("sh")
-    //     .arg("-c")
-    //     .arg(select_statement)
-    //     .output()
-    //     .expect("Failed to execute command");
-    // debug!("Select statement result is {:?}", select_sqlite.stdout);
-    // let parsed_select: Vec<&str> = std::str::from_utf8(&select_sqlite.stdout)
-    //     .unwrap()
-    //     .trim_end_matches("\n")
-    //     .split("|")
-    //     .collect();
-    // debug!("Parsed select {:?}", parsed_select);
-
-    // let mut previous_counts: Value;
-    // if parsed_select.len() > 1 {
-    //     previous_counts = serde_json::from_str(&parsed_select[1]).unwrap();
-    // } else {
-    //     previous_counts = serde_json::from_str("{}").unwrap();
-    // }
-    // debug!("JSON select counts {:?}", previous_counts);
     let mut folder_header = "Language Count,,".to_owned();
     let mut language_header = ",,".to_owned();
     let mut previous_row = "".to_owned();
     previous_row.push_str(parsed_select.get(0).unwrap());
     previous_row.push_str(",");
     previous_row.push_str(parsed_select.get(1).unwrap());
-    // let previous_date = if parsed_select[0].len() > 1 {
-    // parsed_select[0]
-    // } else {
-    // ","
-    // };
     previous_row.push_str(",");
 
     let mut current_row = "".to_owned();
@@ -217,7 +169,6 @@ fn main() {
     let mut diff_row = ",,".to_owned();
     let mut diff_percent_row = ",,".to_owned();
 
-    // debug!("\nCheck CSV position {}, {}\n", folder_pos, language_pos);
     let empty_json = serde_json::from_str("{}").unwrap();
     let empty_value = json!(0);
     for (folder_pos, folder) in folder_split.iter().enumerate() {
@@ -255,15 +206,13 @@ fn main() {
             debug!("csv position: {}", csv_position);
             let previous_cell_value = parsed_select.get(csv_position).unwrap();
             debug!("previous_cell_value: {:?}", previous_cell_value);
-            //             let previous_cell_value = previous_counts
-            //                 .get(language[0])
-            //                 .unwrap_or(&empty_json)
-            //                 .get(folder)
-            //                 .unwrap_or(&empty_value);
             previous_row.push_str(&previous_cell_value.to_string());
             let previous_integer: i64 = previous_cell_value.parse().unwrap();
             let current_integer: i64 = cell_value.as_i64().unwrap();
-            let language_percent = (current_integer as f64 / folder_total as f64) * 100_f64;
+            let language_percent = match folder_total > 0 {
+                true => (current_integer as f64 / folder_total as f64) * 100_f64,
+                false => 0 as f64,
+            };
             current_row.push_str(",");
             current_row.push_str(&format!("{:.2}%", &language_percent));
 
@@ -283,12 +232,10 @@ fn main() {
             let diff_string = diff_integer.to_string();
             diff_row.push_str(&diff_string);
 
-            let diff_percent: f64 = if diff_integer != 0 {
-                (diff_integer as f64 / previous_integer as f64) * 100_f64
-            } else {
-                100 as f64
+            let diff_percent: f64 = match diff_integer > 0 {
+                true => (diff_integer as f64 / previous_integer as f64) * 100_f64,
+                false => 100 as f64,
             };
-            // let diff_percent_string = diff_percent.to_string();
             diff_percent_row.push_str(&format!("{:.2}%", &diff_percent));
             let is_last =
                 language_pos == languages_vec.len() - 1 && folder_pos == folder_split.len() - 1;
