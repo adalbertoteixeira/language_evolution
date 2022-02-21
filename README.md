@@ -19,6 +19,7 @@ cargo build --release --target x86_64-unknown-linux-gnu
 # or using system target
 
 cargo build --release
+cp target/x86_64-apple-darwin/release/language_evolution target/x86_64-apple-darwin/release/x86_64-apple-darwin_language_evolution
 ```
 
 If build fails , remove `target/*` before building.
@@ -28,9 +29,6 @@ To upload latest build binaries to Github:
 If a new release is needed
 ```
 gh release create v0.2.0
-```
-
-```
 gh release upload v0.2.0 target/x86_64-unknown-linux-gnu/release/language_evolution --clobber
 ```
 
@@ -47,14 +45,14 @@ Only one release version _OR_ date are allowed.
 
 cd ~ && \
 apt-get update && apt-get install ripgrep xsv && \
-curl -LO https://Vgithub.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
+curl -LO https://github.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
 chmod +x ./language_evolution
 
 # macOS
 
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-curl -LO https://Vgithub.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
+curl -LO https://github.com/adalbertoteixeira/language_evolution/releases/download/v0.2.0/language_evolution && \
 chmod +x ./language_evolution
 ```
 
