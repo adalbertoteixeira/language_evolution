@@ -333,14 +333,12 @@ fn main() {
         add_counts.push_str(&opt.repo_path);
         add_counts.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
         debug!("Last line removal command is {:?}", &add_counts);
-        if opt.dry_run != true {
-            let add_counts_result = Command::new("sh")
-                .arg("-c")
-                .arg(&add_counts)
-                .output()
-                .unwrap();
-            debug!("Last line removal result is {:?}", &add_counts_result);
-        }
+        let add_counts_result = Command::new("sh")
+            .arg("-c")
+            .arg(&add_counts)
+            .output()
+            .unwrap();
+        debug!("Last line removal result is {:?}", &add_counts_result);
 
         let mut add_integer_differences = r#"echo '"#.to_owned();
         add_integer_differences.push_str(&diff_row);
