@@ -38,6 +38,7 @@ Only one release version _OR_ date are allowed.
 ## Requirements
 - sed / gnu-sed on MacOs
 - [xsv](https://github.com/BurntSushi/xsv)
+- [rp](https://github.com/BurntSushi/ripgrep)
 
 ## Install
 ```
