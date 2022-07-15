@@ -90,7 +90,7 @@ fn main() {
     debug!("Parse Select split: {:?}", parsed_select);
 
     for (language_pos, language) in languages_vec.iter().enumerate() {
-        debug!("Language being checked is {:?}", language[0]);
+        debug!("Language being checked is {:?}\n", language[0]);
         let mut json_language_counts = r#""#.to_owned();
         json_language_counts.push_str(r#"""#);
         json_language_counts.push_str(language[0]);
@@ -147,6 +147,11 @@ fn main() {
         debug!("JSON value is {:?}", json_language_counts);
     }
     json_counts.push_str(r#"}"#);
+
+    debug!(
+        "\nCheck CSV position {:?}, {:?}\n",
+        folder_split, languages_vec
+    );
 
     debug!("JSON string is {:?}", json_counts);
     let json_value: Value = serde_json::from_str(&json_counts).unwrap();
@@ -229,6 +234,7 @@ fn main() {
             } else {
                 0
             };
+            debug!("diff integer: {:?}", diff_integer);
             let diff_string = diff_integer.to_string();
             diff_row.push_str(&diff_string);
 
@@ -279,30 +285,27 @@ fn main() {
         add_counts.push_str(r#"' >> "#);
         add_counts.push_str(&opt.repo_path);
         add_counts.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-        debug!("Last line removal command is {:?}", &add_counts);
+        debug!("Adding totals command is {:?}", &add_counts);
         let add_counts_result = Command::new("sh")
             .arg("-c")
             .arg(&add_counts)
             .output()
             .unwrap();
-        debug!("Last line removal result is {:?}", &add_counts_result);
+        debug!("Adding totals result is {:?}", &add_counts_result);
 
         let mut add_integer_differences = r#"echo '"#.to_owned();
         add_integer_differences.push_str(&diff_row);
         add_integer_differences.push_str(r#"' >> "#);
         add_integer_differences.push_str(&opt.repo_path);
         add_integer_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-        debug!(
-            "Last line removal command is {:?}",
-            &add_integer_differences
-        );
+        debug!("Adding totals command is {:?}", &add_integer_differences);
         let add_integer_differences_result = Command::new("sh")
             .arg("-c")
             .arg(&add_integer_differences)
             .output()
             .unwrap();
         debug!(
-            "Last line removal result is {:?}",
+            "Adding totals result is {:?}",
             &add_integer_differences_result
         );
 
@@ -311,18 +314,19 @@ fn main() {
         add_percent_differences.push_str(r#"' >> "#);
         add_percent_differences.push_str(&opt.repo_path);
         add_percent_differences.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
-        debug!(
-            "Last line removal command is {:?}",
-            &add_percent_differences
-        );
+        debug!("Adding totals command is {:?}", &add_percent_differences);
         let add_percent_differences_result = Command::new("sh")
             .arg("-c")
             .arg(&add_percent_differences)
             .output()
             .unwrap();
         debug!(
-            "Last line removal result is {:?}",
+            "Adding totals result is {:?}",
             &add_percent_differences_result
         );
+    } else {
+        debug!("Adding totals result is {:?}", &current_row);
+        debug!("Adding totals result is {:?}", &diff_row);
+        debug!("Adding totals result is {:?}", &diff_percent_row);
     }
 }
