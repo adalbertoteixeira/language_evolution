@@ -1,4 +1,5 @@
 use log::{debug, info};
+use std::env;
 use std::process::Command;
 
 pub fn get_version(version: &str, repo_path: &str) -> String {
@@ -137,10 +138,16 @@ pub fn check_date_exists(repo_path: &str, date: &str) -> bool {
 
 pub fn remove_last_lines(repo_path: &str, dry_run: bool) {
     if dry_run == true {
+        debug!("{:?}", env::consts::OS);
         return;
     }
-    // @TODO check if gnu-sed exists, otherwise add `-i ''`
-    let mut remove_last_line = r#"sed -i '$d' "#.to_owned();
+    let mut remove_last_line = r#""#.to_owned();
+    if env::consts::OS == "macos" {
+        remove_last_line.push_str("gsed");
+    } else {
+        remove_last_line.push_str("sed");
+    }
+    remove_last_line.push_str(r#" -i '$d' "#);
     remove_last_line.push_str(repo_path);
     remove_last_line.push_str(r#"/TYPESCRIPT_EVOLUTION.csv"#);
     debug!("Last line removal command is {:?}", &remove_last_line);
